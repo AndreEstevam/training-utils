@@ -94,7 +94,7 @@ def extract_bboxes_from_mask(mask):
     Args:
         mask: [height, width, num_instances]. Mask pixels are either 1 or 0.
     Returns: 
-        bbox array [num_instances, (y1, x1, y2, x2)].
+        bbox array [num_instances, (x1, y1, x2, y2)].
     
     NOT MINE.
     """
@@ -115,7 +115,7 @@ def extract_bboxes_from_mask(mask):
             # resizing or cropping. Set bbox to zeros
             x1, x2, y1, y2 = 0, 0, 0, 0
             print("No bbox!")
-        boxes[i] = np.array([y1, x1, y2, x2])
+        boxes[i] = np.array([x1, y1, x2, y2])
     return boxes.astype(np.int32)
     
     
