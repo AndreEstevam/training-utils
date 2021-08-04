@@ -157,3 +157,35 @@ def rle_decode(rle, shape):
     # Reshape and transpose
     mask = mask.reshape([shape[1], shape[0]]).T
     return mask
+
+
+"""
+AIcrowd
+"""
+def extract_bboxes_aicrowd(mask):
+    """
+    Compute bounding boxes from masks.
+    Args:
+        mask: [num_instances, height, width]. Mask pixels are either 1 or 0.
+    Returns: 
+        bbox array [num_instances, (x1, y1, x2, y2)].
+    """
+    boxes = np.zeros([mask.shape[0], 4], dtype=np.int32)
+    for i in range(mask.shape[0]):
+        m = mask[i, :, :]
+        # Bounding box.
+        horizontal_indicies = np.where(np.any(m, axis=0))[0]
+        vertical_indicies = np.where(np.any(m, axis=1))[0]
+        if horizontal_indicies.shape[0]:
+            x1, x2 = horizontal_indicies[[0, -1]]
+            y1, y2 = vertical_indicies[[0, -1]]
+            # x2 and y2 should not be part of the box. Increment by 1.
+            x2 += 1
+            y2 += 1
+        else:
+            # No mask for this instance. Might happen due to
+            # resizing or cropping. Set bbox to zeros
+            x1, x2, y1, y2 = 0, 0, 0, 0
+            logging.warning("extract_bboxes_aicrowd() found no mask, thus generated no bbbox!")
+        boxes[i] = np.array([x1, y1, x2, y2])   # ORIGINAL: [y1, x1, y2, x2]
+    return boxes.astype(np.int32)
