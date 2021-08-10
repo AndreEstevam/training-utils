@@ -89,7 +89,6 @@ class CrowdDataset(torch.utils.data.Dataset):
         Args:
             idx: index of sample to be fed
         return:
-            dict containing:
             - PIL Image of shape (H, W)
             - target (dict) containing: 
                 - boxes:    FloatTensor[N, 4], N being the n° of instances and it's bounding 
