@@ -114,7 +114,7 @@ def extract_bboxes_from_mask(mask):
             x1, x2, y1, y2 = 0, 0, 0, 0
             logging.warning("extract_bboxes_from_mask func returned no bbox!")
         boxes[i] = np.array([x1, y1, x2, y2])       # ORIGINAL: [y1, x1, y2, x2]
-    return boxes.astype(np.int32)
+    return boxes.astype(np.float32)
     
     
 def rle_encode(mask):
