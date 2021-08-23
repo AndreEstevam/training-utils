@@ -75,9 +75,12 @@ class EdfDataset(torch.utils.data.Dataset):
                 break
 
 class CrowdDataset(torch.utils.data.Dataset):
-    def __init__(self, dataset_dir, subset, transforms):
+    def __init__(self, dataset_dir, subset, transforms, load_small=False):
         dataset_path = os.path.join(dataset_dir, subset)
-        ann_file = os.path.join(dataset_path, "annotation.json")
+        if load_small:
+            ann_file = os.path.join(dataset_path, "annotation-small.json")
+        else:
+            ann_file = os.path.join(dataset_path, "annotation.json")
         self.imgs_dir = os.path.join(dataset_path, "images")
         self.coco = COCO(ann_file)
         self.img_ids = sorted(self.coco.getImgIds())
@@ -108,22 +111,18 @@ class CrowdDataset(torch.utils.data.Dataset):
 
         # Getting annotations
         anno = self.coco.loadAnns(self.coco.getAnnIds(image_id)) 
-        anno = [obj for obj in anno if obj['iscrowd'] == 0]
-
-        # Getting bboxes
-        boxes = [obj["bbox"] for obj in anno]
-        # guard against no boxes via resizing
-        boxes = torch.as_tensor(boxes, dtype=torch.float32).reshape(-1, 4)
-        boxes[:, 2:] += boxes[:, :2]
-        boxes[:, 0::2].clamp_(min=0, max=300)       # images are 300x300
-        boxes[:, 1::2].clamp_(min=0, max=300)
+        anno = [obj for obj in anno if obj['iscrowd'] == 0]         # necessary?
 
         # Getting labels
         classes = torch.ones(len(anno), dtype=torch.int64)
 
         # Getting masks
-        masks = np.array([self.coco.annToMask(obj) for obj in anno])
-        masks = torch.as_tensor(masks, dtype=torch.uint8)
+        masks_np = np.array([self.coco.annToMask(obj) for obj in anno])
+        masks = torch.as_tensor(masks_np, dtype=torch.uint8)
+        
+        # Extracting bboxes from masks
+        boxes = extract_bboxes_from_mask(np.dstack(masks_np))
+        boxes = torch.as_tensor(boxes, dtype=torch.float32)
 
         # Selecting valid instances
         keep = (boxes[:, 3] > boxes[:, 1]) & (boxes[:, 2] > boxes[:, 0])
@@ -131,7 +130,6 @@ class CrowdDataset(torch.utils.data.Dataset):
         classes = classes[keep]
         masks = masks[keep]
 
-        # 
         image_id = torch.tensor([image_id])
         area = torch.tensor([obj["area"] for obj in anno])
         iscrowd = torch.tensor([obj["iscrowd"] for obj in anno])
