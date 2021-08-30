@@ -1,4 +1,4 @@
-# ccupation-detection-on-satellite-imagery
+# occupation-detection-on-satellite-imagery
 
 The objective of this project is to adapt, train and test a Mask R-CNN model to identify occupations in satellite imagery for regulatory purposes. The state-of-the-art architecture in question was chosen because each occupation, even if reasonably clustered, must be independently identified and accurately delimitated, and region based approaches showed good results for detecting small targets.
 
