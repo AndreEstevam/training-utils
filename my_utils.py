@@ -1,5 +1,5 @@
 """
-Utilitie functions to manage data obtained via ArcGIS and basic operations.
+Utilitie functions to manage georeferenced data and other basic operations.
 """
 
 import logging
